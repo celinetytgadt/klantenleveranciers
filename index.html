@@ -53,6 +53,7 @@ body{font-family:var(--font-sans);background:var(--color-background-tertiary);co
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);position:sticky;top:0;z-index:10}
 .logo{font-weight:500;font-size:16px;letter-spacing:-0.02em}
 .logo span{color:var(--color-text-secondary);font-weight:400}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 .sidebar{border-right:0.5px solid var(--color-border-tertiary);padding:12px 0;background:var(--color-background-secondary);position:sticky;top:49px;align-self:start;height:calc(100vh - 49px);overflow-y:auto}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:14px;color:var(--color-text-secondary);border-left:2px solid transparent;transition:all .15s}
 .nav-item:hover{color:var(--color-text-primary);background:var(--color-background-primary)}
@@ -67,10 +68,15 @@ body{font-family:var(--font-sans);background:var(--color-background-tertiary);co
 .btn:hover{background:var(--color-background-secondary)}
 .btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border-color:transparent}
 .btn-primary:hover{opacity:.85}
+.btn-danger{border-color:var(--color-text-danger);color:var(--color-text-danger)}
+.btn-danger:hover{background:var(--color-background-danger)}
 .btn i{font-size:15px}
-.search-bar{display:flex;gap:8px;margin-bottom:16px}
-.search-bar input{flex:1;padding:8px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px;font-family:var(--font-sans)}
-.search-bar input:focus{outline:none;border-color:var(--color-border-primary)}
+.search-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.search-wrap{position:relative;flex:1}
+.search-wrap input{width:100%;padding:8px 32px 8px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px;font-family:var(--font-sans)}
+.search-wrap input:focus{outline:none;border-color:var(--color-border-primary)}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);font-size:16px;padding:2px;display:none;line-height:1}
+.search-clear.visible{display:block}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:8px 12px;font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;border-bottom:0.5px solid var(--color-border-tertiary)}
 td{padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
@@ -85,8 +91,8 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
 .modal-title{font-size:16px;font-weight:500;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
-.field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px;font-family:var(--font-sans)}
-.field input:focus,.field select:focus{outline:none;border-color:var(--color-border-primary)}
+.field input{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px;font-family:var(--font-sans)}
+.field input:focus{outline:none;border-color:var(--color-border-primary)}
 .contact-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
 .contact-row:last-child{border:none}
 .contact-row input{flex:1;padding:6px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)}
@@ -106,6 +112,8 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
 .dash-open-row:hover span:first-child{color:var(--color-text-info)}
 .dash-open-row span:first-child{font-size:13px}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--color-text-primary);color:var(--color-background-primary);padding:10px 20px;border-radius:var(--border-radius-md);font-size:13px;opacity:0;transition:opacity .2s;z-index:200;pointer-events:none}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -113,7 +121,10 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
   <div class="topbar">
     <i class="ti ti-shirt" style="font-size:20px"></i>
     <div class="logo">MetWear <span>B.V.</span></div>
-    <div style="margin-left:auto;font-size:12px;color:var(--color-text-tertiary)">Relatiebeheer</div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="exportData()" title="Exporteer jouw data als bestand"><i class="ti ti-download"></i> Exporteren</button>
+      <label class="btn" title="Laad een eerder geëxporteerd bestand" style="cursor:pointer"><i class="ti ti-upload"></i> Importeren<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    </div>
   </div>
   <div class="sidebar">
     <div class="nav-section">Menu</div>
@@ -125,42 +136,46 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
     <div class="nav-item" onclick="showPage('openstaand')"><i class="ti ti-alert-circle"></i> Openstaande facturen</div>
   </div>
   <div class="main">
+
     <div id="page-dashboard" class="page active">
       <div class="page-header"><div class="page-title">Dashboard</div></div>
       <div class="stat-row" id="dash-stats"></div>
       <div class="dash-grid">
-        <div>
-          <div class="section-title">Klanten met openstaande facturen</div>
-          <div id="dash-klanten-open"></div>
-        </div>
-        <div>
-          <div class="section-title">Leveranciers met openstaande facturen</div>
-          <div id="dash-lev-open"></div>
-        </div>
+        <div><div class="section-title">Klanten met openstaande facturen</div><div id="dash-klanten-open"></div></div>
+        <div><div class="section-title">Leveranciers met openstaande facturen</div><div id="dash-lev-open"></div></div>
       </div>
     </div>
+
     <div id="page-klanten" class="page">
       <div class="page-header">
         <div class="page-title">Klanten <span style="font-size:14px;font-weight:400;color:var(--color-text-secondary)" id="klanten-count"></span></div>
         <button class="btn btn-primary" onclick="openModal('klant')"><i class="ti ti-plus"></i> Nieuwe klant</button>
       </div>
       <div class="search-bar">
-        <input type="text" id="search-klant" placeholder="Zoek op naam, BTW-nr of gemeente..." oninput="renderKlanten()">
+        <div class="search-wrap">
+          <input type="text" id="search-klant" placeholder="Zoek op naam, BTW-nr, gemeente of contactpersoon..." oninput="onSearch('klant')">
+          <button class="search-clear" id="clear-klant" onclick="clearSearch('klant')" title="Wis filter"><i class="ti ti-x"></i></button>
+        </div>
       </div>
       <table><thead><tr><th>Naam</th><th>BTW-nummer</th><th>Gemeente</th><th>Contactpersoon</th><th>Openstaand</th></tr></thead>
       <tbody id="tbody-klanten"></tbody></table>
     </div>
+
     <div id="page-leveranciers" class="page">
       <div class="page-header">
         <div class="page-title">Leveranciers <span style="font-size:14px;font-weight:400;color:var(--color-text-secondary)" id="lev-count"></span></div>
         <button class="btn btn-primary" onclick="openModal('leverancier')"><i class="ti ti-plus"></i> Nieuwe leverancier</button>
       </div>
       <div class="search-bar">
-        <input type="text" id="search-lev" placeholder="Zoek op naam, BTW-nr of gemeente..." oninput="renderLeveranciers()">
+        <div class="search-wrap">
+          <input type="text" id="search-lev" placeholder="Zoek op naam, BTW-nr, gemeente of contactpersoon..." oninput="onSearch('lev')">
+          <button class="search-clear" id="clear-lev" onclick="clearSearch('lev')" title="Wis filter"><i class="ti ti-x"></i></button>
+        </div>
       </div>
       <table><thead><tr><th>Naam</th><th>BTW-nummer</th><th>Gemeente</th><th>Contactpersoon</th><th>Openstaand</th></tr></thead>
       <tbody id="tbody-leveranciers"></tbody></table>
     </div>
+
     <div id="page-openstaand" class="page">
       <div class="page-header"><div class="page-title">Openstaande facturen</div></div>
       <div class="dash-grid">
@@ -176,10 +191,12 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
         </div>
       </div>
     </div>
+
     <div id="page-detail" class="page">
-      <button class="back-btn" id="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> <span id="back-label">Terug</span></button>
+      <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> <span id="back-label">Terug</span></button>
       <div id="detail-content"></div>
     </div>
+
   </div>
 </div>
 
@@ -208,189 +225,259 @@ tr:hover td{background:var(--color-background-secondary);cursor:pointer}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+const STARTDATA={
+  klanten:[
+    {id:'k01',naam:'ModeMagazijn De Smet',btw:'BE 0412.345.678',straat:'Kalverstraat 4',postcode:'2000',gemeente:'Antwerpen',contacten:['Lien De Smet','lien@desmet.be']},
+    {id:'k02',naam:'Groene Garderobe BVBA',btw:'BE 0523.987.654',straat:'Groenplaats 7',postcode:'9000',gemeente:'Gent',contacten:['Pieter Janssen']},
+    {id:'k03',naam:'FashionFirst NV',btw:'BE 0634.111.222',straat:'Meir 22',postcode:'2000',gemeente:'Antwerpen',contacten:['Sara Peeters','Jonas Claes']},
+    {id:'k04',naam:'EcoWear Brugge',btw:'BE 0745.333.444',straat:'Breidelstraat 18',postcode:'8000',gemeente:'Brugge',contacten:['Thomas Verhaeghe']},
+    {id:'k05',naam:'Stadswinkel Leuven',btw:'BE 0856.555.666',straat:'Bondgenotenlaan 3',postcode:'3000',gemeente:'Leuven',contacten:['Nathalie Wouters']},
+    {id:'k06',naam:'KledingKorner BVBA',btw:'BE 0967.777.888',straat:'Kerkstraat 14',postcode:'3500',gemeente:'Hasselt',contacten:['Wouter Declercq']},
+    {id:'k07',naam:'Sustainable Style Gent',btw:'BE 0178.999.000',straat:'Vrijdagmarkt 9',postcode:'9000',gemeente:'Gent',contacten:['An Vermeersch','an@ssg.be']},
+    {id:'k08',naam:'Trendy Threads NV',btw:'BE 0289.123.456',straat:'Steenweg 55',postcode:'1000',gemeente:'Brussel',contacten:['Kevin Bogaert']},
+    {id:'k09',naam:'Puur & Duurzaam',btw:'BE 0390.234.567',straat:'Donderbergweg 3',postcode:'2300',gemeente:'Turnhout',contacten:['Elise Mertens']},
+    {id:'k10',naam:'GreenThread Mechelen',btw:'BE 0401.345.678',straat:'Befferstraat 11',postcode:'2800',gemeente:'Mechelen',contacten:['Bart Nijs']},
+    {id:'k11',naam:'De Bewuste Kast',btw:'BE 0512.456.789',straat:'Grote Markt 2',postcode:'8500',gemeente:'Kortrijk',contacten:['Sofie Dewulf','sofie@dbk.be']},
+    {id:'k12',naam:'WearGreen VZW',btw:'BE 0623.567.890',straat:'Vismarkt 6',postcode:'9000',gemeente:'Gent',contacten:['Raf Goossens']},
+    {id:'k13',naam:'Urbana Fashion',btw:'BE 0734.678.901',straat:'Anspachlaan 44',postcode:'1000',gemeente:'Brussel',contacten:['Céline Dupont']},
+    {id:'k14',naam:'Conscious Closet',btw:'BE 0845.789.012',straat:'Leopoldlaan 7',postcode:'8400',gemeente:'Oostende',contacten:['Dieter Vanhoorne']},
+    {id:'k15',naam:'Stof & Stijl',btw:'BE 0956.890.123',straat:'Zavelstraat 3',postcode:'3000',gemeente:'Leuven',contacten:['Lore Adriaens']},
+    {id:'k16',naam:'NaturalWear Aalst',btw:'BE 0167.901.234',straat:'Kattestraat 19',postcode:'9300',gemeente:'Aalst',contacten:['Jeroen Willems']},
+    {id:'k17',naam:'EcoChic NV',btw:'BE 0278.012.345',straat:'Koningsstraat 88',postcode:'1000',gemeente:'Brussel',contacten:['Hanne Claeys','hanne@ecochic.be']},
+    {id:'k18',naam:'Biomode Roeselare',btw:'BE 0389.123.456',straat:'Beversesteenweg 4',postcode:'8800',gemeente:'Roeselare',contacten:['Mathias Declerck']},
+    {id:'k19',naam:'Veldgroen Retail',btw:'BE 0490.234.567',straat:'Dorpsstraat 30',postcode:'9620',gemeente:'Zottegem',contacten:['Griet Catteeuw']},
+    {id:'k20',naam:'ModernNature Gent',btw:'BE 0501.345.678',straat:'Coupure Links 24',postcode:'9000',gemeente:'Gent',contacten:['Tijs Van Hecke']},
+    {id:'k21',naam:'Circulaire Kledij',btw:'BE 0612.456.789',straat:'Lange Nieuwstraat 8',postcode:'2000',gemeente:'Antwerpen',contacten:['Els Bogaerts']},
+    {id:'k22',naam:'DuurzaamDragen BVBA',btw:'BE 0723.567.890',straat:'Stationsplein 1',postcode:'3800',gemeente:'Sint-Truiden',contacten:['Niels Vandenberghe']},
+    {id:'k23',naam:'FairFashion Kortrijk',btw:'BE 0834.678.901',straat:'Doorniksestraat 12',postcode:'8500',gemeente:'Kortrijk',contacten:['Amelie Desmet']},
+    {id:'k24',naam:'Katoenen Kast',btw:'BE 0945.789.012',straat:'Guido Gezellestraat 5',postcode:'8200',gemeente:'Brugge',contacten:['Frank Verstraete']},
+    {id:'k25',naam:'Herbruikbaar & Hip',btw:'BE 0156.890.123',straat:'Nieuwstraat 77',postcode:'1000',gemeente:'Brussel',contacten:['Laura Smeets']},
+    {id:'k26',naam:'Groene Winkel Geel',btw:'BE 0267.901.234',straat:'Markt 5',postcode:'2440',gemeente:'Geel',contacten:['Pieter-Jan Leys']},
+    {id:'k27',naam:'Texturas Belgium',btw:'BE 0378.012.345',straat:'Industrielaan 9',postcode:'1070',gemeente:'Brussel',contacten:['Marie Lecomte']},
+    {id:'k28',naam:'WovenWorld BVBA',btw:'BE 0489.123.456',straat:'Handelskaai 3',postcode:'1000',gemeente:'Brussel',contacten:['Sven Hermans']},
+    {id:'k29',naam:'KledingDepot Genk',btw:'BE 0590.234.567',straat:'Europalaan 12',postcode:'3600',gemeente:'Genk',contacten:['Yannick Puts']},
+    {id:'k30',naam:'Slow Fashion Store',btw:'BE 0601.345.678',straat:'Vrijheidslaan 18',postcode:'9200',gemeente:'Dendermonde',contacten:['Annelies Michiels']},
+    {id:'k31',naam:'Vezel & Vorm',btw:'BE 0712.456.789',straat:'Kloosterstraat 6',postcode:'2000',gemeente:'Antwerpen',contacten:['Bram Leclercq']},
+    {id:'k32',naam:'Echt & Eerlijk NV',btw:'BE 0823.567.890',straat:'Rekollettenstraat 10',postcode:'9000',gemeente:'Gent',contacten:['Liesbeth Nijs']},
+    {id:'k33',naam:'Kabas Concept Store',btw:'BE 0934.678.901',straat:'Paleizenstraat 32',postcode:'1030',gemeente:'Schaarbeek',contacten:['Julie Dumont']},
+    {id:'k34',naam:'Kledingcollectief VZW',btw:'BE 0145.789.012',straat:'Tivolitstraat 7',postcode:'2018',gemeente:'Antwerpen',contacten:['Robin De Backer']},
+    {id:'k35',naam:'FiberFair Hasselt',btw:'BE 0256.890.123',straat:'Grote Markt 14',postcode:'3500',gemeente:'Hasselt',contacten:['Noor Peeters']},
+    {id:'k36',naam:'Duurzame Mode Gent',btw:'BE 0367.901.234',straat:'Vlasmarkt 2',postcode:'9000',gemeente:'Gent',contacten:['Stef Baert','stef@dmg.be']},
+    {id:'k37',naam:'CleanCut Fashion',btw:'BE 0478.012.345',straat:'Mechelsesteenweg 4',postcode:'2018',gemeente:'Antwerpen',contacten:['Eva Nijs']},
+    {id:'k38',naam:'Bio Boutique Brugge',btw:'BE 0589.123.456',straat:'Wollestraat 9',postcode:'8000',gemeente:'Brugge',contacten:['Hendrik Deschamps']},
+    {id:'k39',naam:'Minimaliste BVBA',btw:'BE 0690.234.567',straat:'Kouter 1',postcode:'9000',gemeente:'Gent',contacten:['Fien Claessens']},
+    {id:'k40',naam:'Goed Gekleed VZW',btw:'BE 0701.345.678',straat:'Vogelmarkt 3',postcode:'2000',gemeente:'Antwerpen',contacten:['Mathieu Dubois']},
+    {id:'k41',naam:'TerraNova Wear',btw:'BE 0812.456.789',straat:'Nijverheidslaan 8',postcode:'8500',gemeente:'Kortrijk',contacten:['Hannelore Vermeersch']},
+    {id:'k42',naam:'Ethische Threads',btw:'BE 0923.567.890',straat:'Burgemeesterstraat 22',postcode:'1000',gemeente:'Brussel',contacten:['Sebastiaan Maes']},
+    {id:'k43',naam:'GreenLabel Shops NV',btw:'BE 0134.678.901',straat:'Brusselsesteenweg 45',postcode:'3000',gemeente:'Leuven',contacten:['Karlien Adams']},
+    {id:'k44',naam:'Warme Draden',btw:'BE 0245.789.012',straat:'Kapittelstraat 5',postcode:'2000',gemeente:'Antwerpen',contacten:['Lien Vanderhaegen']},
+    {id:'k45',naam:'PureWear Vilvoorde',btw:'BE 0356.890.123',straat:'Parkstraat 7',postcode:'1800',gemeente:'Vilvoorde',contacten:['Tim Verschueren']},
+    {id:'k46',naam:'Natumode Liège',btw:'BE 0467.901.234',straat:'Rue Saint-Gilles 3',postcode:'4000',gemeente:'Luik',contacten:['Sophie Renard']},
+    {id:'k47',naam:'Eco Ensemble',btw:'BE 0578.012.345',straat:'Abdijstraat 11',postcode:'9000',gemeente:'Gent',contacten:['Wout Vercruysse']},
+    {id:'k48',naam:'GreenGarment Aalst',btw:'BE 0689.123.456',straat:'Molenstraat 6',postcode:'9300',gemeente:'Aalst',contacten:['Nathalie De Wolf']},
+    {id:'k49',naam:'Bewust Gekleed',btw:'BE 0790.234.567',straat:'Oud-Strijdersplein 4',postcode:'2200',gemeente:'Herentals',contacten:['Jonas Beys']},
+    {id:'k50',naam:'Kleur & Katoen BVBA',btw:'BE 0801.345.678',straat:'Kattestraat 2',postcode:'8000',gemeente:'Brugge',contacten:['An-Sofie Declercq','ansofie@kleurkatoen.be']},
+  ],
+  leveranciers:[
+    {id:'l01',naam:'BioTextiel Portugal',btw:'PT 501234567',straat:'Rua das Fábricas 88',postcode:'4000',gemeente:'Porto',contacten:['Carlos Ferreira','carlos@biotextiel.pt']},
+    {id:'l02',naam:'GreenFiber Netherlands BV',btw:'NL 123456789B01',straat:'Industrieweg 45',postcode:'5600',gemeente:'Eindhoven',contacten:['Anke van Dijk']},
+    {id:'l03',naam:'EcoLabel Printing',btw:'BE 0345.678.901',straat:'Drukkerijstraat 6',postcode:'1070',gemeente:'Brussel',contacten:['Marc Dubois']},
+    {id:'l04',naam:'ZipFast Accessories',btw:'DE 123456789',straat:'Fabrikstraße 12',postcode:'40210',gemeente:'Düsseldorf',contacten:['Klaus Müller']},
+    {id:'l05',naam:'OrganicCotton Spain SL',btw:'ES B12345678',straat:'Calle Industria 4',postcode:'08025',gemeente:'Barcelona',contacten:['Marta López']},
+    {id:'l06',naam:'NatureDye Italia SRL',btw:'IT 12345678901',straat:'Via della Tessitura 7',postcode:'50123',gemeente:'Florence',contacten:['Giulia Rossi','g.rossi@naturedye.it']},
+    {id:'l07',naam:'Recycled Yarns UK Ltd',btw:'GB 123456789',straat:'Mill Road 33',postcode:'LS1 4AP',gemeente:'Leeds',contacten:['James Thornton']},
+    {id:'l08',naam:'Hangtag Solutions BVBA',btw:'BE 0456.789.012',straat:'Industriepark 3',postcode:'2200',gemeente:'Herentals',contacten:['Petra Claes']},
+    {id:'l09',naam:'PackGreen NV',btw:'BE 0567.890.123',straat:'Verpakkingsweg 9',postcode:'9320',gemeente:'Erembodegem',contacten:['Dirk Smet']},
+    {id:'l10',naam:'Fairtex India Pvt Ltd',btw:'IN 07AABCF1234A1Z5',straat:'Gandhi Nagar 14',postcode:'380001',gemeente:'Ahmedabad',contacten:['Priya Sharma']},
+    {id:'l11',naam:'BambooBunch Thailand',btw:'TH 0105556789',straat:'Sukhumvit 22',postcode:'10110',gemeente:'Bangkok',contacten:['Somchai Pradit']},
+    {id:'l12',naam:'LinenLux France SARL',btw:'FR 12345678901',straat:'Rue du Lin 8',postcode:'59000',gemeente:'Lille',contacten:['Émile Durand']},
+    {id:'l13',naam:'WovenWonders Turkey',btw:'TR 1234567890',straat:'Organize Sanayi 5',postcode:'16140',gemeente:'Bursa',contacten:['Mehmet Yilmaz','m.yilmaz@wovenwonders.tr']},
+    {id:'l14',naam:'Sustainable Buttons GmbH',btw:'DE 987654321',straat:'Knopfgasse 3',postcode:'70173',gemeente:'Stuttgart',contacten:['Anna Weber']},
+    {id:'l15',naam:'ThreadPool Denmark ApS',btw:'DK 12345678',straat:'Tekstilvej 12',postcode:'8000',gemeente:'Aarhus',contacten:['Lars Nielsen']},
+    {id:'l16',naam:'EcoBox Belgium BVBA',btw:'BE 0678.901.234',straat:'Kartonstraat 4',postcode:'9000',gemeente:'Gent',contacten:['Lore Baert']},
+    {id:'l17',naam:'CoolCarton NV',btw:'BE 0789.012.345',straat:'Verpakkingspark 7',postcode:'2800',gemeente:'Mechelen',contacten:['Ruben Adams']},
+    {id:'l18',naam:'NaturalWash Solutions',btw:'BE 0890.123.456',straat:'Wasmiddelenweg 2',postcode:'3600',gemeente:'Genk',contacten:['Hilde Wouters']},
+    {id:'l19',naam:'FairSeam Portugal Lda',btw:'PT 509876543',straat:'Avenida Têxtil 22',postcode:'4715',gemeente:'Braga',contacten:['Ana Oliveira']},
+    {id:'l20',naam:'BioPack Innovations',btw:'NL 987654321B02',straat:'Groenweg 8',postcode:'3542',gemeente:'Utrecht',contacten:['Femke Jansen']},
+    {id:'l21',naam:'RawMaterial Morocco',btw:'MA 123456',straat:'Zone Industrielle 3',postcode:'20000',gemeente:'Casablanca',contacten:['Hassan Benali']},
+    {id:'l22',naam:'Texturas Iberia SA',btw:'ES A87654321',straat:'Polígono Industrial 12',postcode:'46014',gemeente:'Valencia',contacten:['Pedro García']},
+    {id:'l23',naam:'EcoStitch Sweden AB',btw:'SE 556677889901',straat:'Fabriksvägen 5',postcode:'41263',gemeente:'Göteborg',contacten:['Ingrid Lindqvist','i.lindqvist@ecostitch.se']},
+    {id:'l24',naam:'FiberArt Poland Sp zoo',btw:'PL 1234567890',straat:'ul Przemysłowa 8',postcode:'60-101',gemeente:'Poznań',contacten:['Marek Kowalski']},
+    {id:'l25',naam:'GreenTag Solutions',btw:'BE 0901.234.567',straat:'Labelstraat 11',postcode:'1000',gemeente:'Brussel',contacten:['Claire Fontaine']},
+    {id:'l26',naam:'NaturLoop Recycling',btw:'BE 0112.345.678',straat:'Recyclageplein 3',postcode:'2050',gemeente:'Antwerpen',contacten:['Bert Cools']},
+    {id:'l27',naam:'Linnen & Leven BVBA',btw:'BE 0223.456.789',straat:'Vlasrotersdreef 6',postcode:'8800',gemeente:'Roeselare',contacten:['Trees Vandamme']},
+    {id:'l28',naam:'KatoenKweek NV',btw:'BE 0334.567.890',straat:'Katoenweg 9',postcode:'9300',gemeente:'Aalst',contacten:['Hugo Lemmens']},
+    {id:'l29',naam:'PrintClean Belgium',btw:'BE 0445.678.901',straat:'Inktvlekkenstraat 2',postcode:'1070',gemeente:'Brussel',contacten:['Aline Dupuis']},
+    {id:'l30',naam:'EcoThread Romania SRL',btw:'RO 12345678',straat:'Strada Fabricii 4',postcode:'400000',gemeente:'Cluj-Napoca',contacten:['Ioana Popescu']},
+    {id:'l31',naam:'BioStof Gent BVBA',btw:'BE 0556.789.012',straat:'Stoflaan 14',postcode:'9000',gemeente:'Gent',contacten:['Geert Michiels']},
+    {id:'l32',naam:'ColorNature Dyes',btw:'BE 0667.890.123',straat:'Verfstraat 3',postcode:'2000',gemeente:'Antwerpen',contacten:['Ingrid Pieters']},
+    {id:'l33',naam:'FairKnit Latvia SIA',btw:'LV 12345678901',straat:'Rūpniecības iela 5',postcode:'LV-1045',gemeente:'Riga',contacten:['Jānis Bērziņš']},
+    {id:'l34',naam:'SilkRoad Belgium NV',btw:'BE 0778.901.234',straat:'Handelsstraat 21',postcode:'1000',gemeente:'Brussel',contacten:['Nadia El Amin']},
+    {id:'l35',naam:'WearWell Estonia OÜ',btw:'EE 123456789',straat:'Tootmise tee 7',postcode:'10111',gemeente:'Tallinn',contacten:['Tiiu Kask']},
+    {id:'l36',naam:'GreenSeam Tunisia',btw:'TN 123456789',straat:'Zone Franche 8',postcode:'2073',gemeente:'Bizerte',contacten:['Khaled Trabelsi']},
+    {id:'l37',naam:'BioBand Accessories',btw:'BE 0889.012.345',straat:'Accessoirepark 4',postcode:'3500',gemeente:'Hasselt',contacten:['Kristien Claes','k.claes@bioband.be']},
+    {id:'l38',naam:'NaturHout Packaging',btw:'BE 0990.123.456',straat:'Houtstraat 6',postcode:'9200',gemeente:'Dendermonde',contacten:['Karel De Cock']},
+    {id:'l39',naam:'EcoZipper Solutions',btw:'DE 456789123',straat:'Reißverschlussweg 3',postcode:'73430',gemeente:'Aalen',contacten:['Peter Schmidt']},
+    {id:'l40',naam:'BreathableFabrics NV',btw:'BE 0101.234.567',straat:'Fabrieksweg 15',postcode:'8500',gemeente:'Kortrijk',contacten:['Veerle Vansteenkiste']},
+    {id:'l41',naam:'WoolWorks Australia',btw:'AU 51824753556',straat:'Merino Drive 4',postcode:'3000',gemeente:'Melbourne',contacten:['Jack Williams']},
+    {id:'l42',naam:'HempHero Czech sro',btw:'CZ 12345678',straat:'Průmyslová 9',postcode:'602 00',gemeente:'Brno',contacten:['Pavel Novák']},
+    {id:'l43',naam:'GreenLabel Ink NV',btw:'BE 0212.345.678',straat:'Zeefdrukstraat 2',postcode:'2300',gemeente:'Turnhout',contacten:['Wim Bogaert']},
+    {id:'l44',naam:'TerraCycle Textiles',btw:'BE 0323.456.789',straat:'Recyclageweg 7',postcode:'1800',gemeente:'Vilvoorde',contacten:['Sigrid Leclercq']},
+    {id:'l45',naam:'FabricFirst Kenya Ltd',btw:'KE A123456789B',straat:'Industrial Area 3',postcode:'00200',gemeente:'Nairobi',contacten:['James Ochieng']},
+    {id:'l46',naam:'EcoWeave Greece EPE',btw:'GR 123456789',straat:'Viomichaniki Odos 6',postcode:'141 23',gemeente:'Athene',contacten:['Nikos Papadopoulos']},
+    {id:'l47',naam:'FairThread Vietnam Co',btw:'VN 0123456789',straat:'Khu Cong Nghiep 12',postcode:'700000',gemeente:'Ho Chi Minh Stad',contacten:['Nguyen Thi Lan']},
+    {id:'l48',naam:'Linnenland België BVBA',btw:'BE 0434.567.890',straat:'Linnenweg 3',postcode:'8800',gemeente:'Roeselare',contacten:['Isabelle Vandenberghe']},
+    {id:'l49',naam:'BioButton Factory',btw:'BE 0545.678.901',straat:'Knopenstraat 8',postcode:'3000',gemeente:'Leuven',contacten:['Stijn Janssen','stijn@biobutton.be']},
+    {id:'l50',naam:'CleanCarrier Logistics',btw:'BE 0656.789.012',straat:'Transportweg 22',postcode:'2600',gemeente:'Berchem',contacten:['David Michiels']},
+  ],
+  facturen:[
+    {id:'f01',type:'verkoop',relatieId:'k01',nr:'VF2024-001',bedrag:1840,status:'open'},
+    {id:'f02',type:'verkoop',relatieId:'k01',nr:'VF2024-008',bedrag:620,status:'vervallen'},
+    {id:'f03',type:'verkoop',relatieId:'k01',nr:'VF2024-045',bedrag:980,status:'betaald'},
+    {id:'f04',type:'verkoop',relatieId:'k02',nr:'VF2024-012',bedrag:410,status:'betaald'},
+    {id:'f05',type:'verkoop',relatieId:'k03',nr:'VF2024-015',bedrag:3200,status:'open'},
+    {id:'f06',type:'verkoop',relatieId:'k03',nr:'VF2024-041',bedrag:1560,status:'betaald'},
+    {id:'f07',type:'verkoop',relatieId:'k04',nr:'VF2024-019',bedrag:740,status:'open'},
+    {id:'f08',type:'verkoop',relatieId:'k05',nr:'VF2024-022',bedrag:950,status:'vervallen'},
+    {id:'f09',type:'verkoop',relatieId:'k05',nr:'VF2024-052',bedrag:1200,status:'open'},
+    {id:'f10',type:'verkoop',relatieId:'k06',nr:'VF2024-028',bedrag:2100,status:'betaald'},
+    {id:'f11',type:'verkoop',relatieId:'k07',nr:'VF2024-031',bedrag:880,status:'open'},
+    {id:'f12',type:'verkoop',relatieId:'k08',nr:'VF2024-033',bedrag:660,status:'betaald'},
+    {id:'f13',type:'verkoop',relatieId:'k09',nr:'VF2024-037',bedrag:310,status:'open'},
+    {id:'f14',type:'verkoop',relatieId:'k10',nr:'VF2024-039',bedrag:1450,status:'betaald'},
+    {id:'f15',type:'verkoop',relatieId:'k11',nr:'VF2024-044',bedrag:570,status:'vervallen'},
+    {id:'f16',type:'verkoop',relatieId:'k12',nr:'VF2024-048',bedrag:290,status:'open'},
+    {id:'f17',type:'verkoop',relatieId:'k13',nr:'VF2024-051',bedrag:2400,status:'betaald'},
+    {id:'f18',type:'verkoop',relatieId:'k14',nr:'VF2024-055',bedrag:830,status:'open'},
+    {id:'f19',type:'verkoop',relatieId:'k15',nr:'VF2024-058',bedrag:1100,status:'betaald'},
+    {id:'f20',type:'verkoop',relatieId:'k16',nr:'VF2024-061',bedrag:490,status:'open'},
+    {id:'f21',type:'verkoop',relatieId:'k17',nr:'VF2024-063',bedrag:3600,status:'vervallen'},
+    {id:'f22',type:'verkoop',relatieId:'k18',nr:'VF2024-066',bedrag:720,status:'betaald'},
+    {id:'f23',type:'verkoop',relatieId:'k19',nr:'VF2024-069',bedrag:350,status:'open'},
+    {id:'f24',type:'verkoop',relatieId:'k20',nr:'VF2024-072',bedrag:1800,status:'betaald'},
+    {id:'f25',type:'verkoop',relatieId:'k21',nr:'VF2024-075',bedrag:540,status:'open'},
+    {id:'f26',type:'verkoop',relatieId:'k22',nr:'VF2024-078',bedrag:960,status:'betaald'},
+    {id:'f27',type:'verkoop',relatieId:'k23',nr:'VF2024-080',bedrag:2200,status:'open'},
+    {id:'f28',type:'verkoop',relatieId:'k24',nr:'VF2024-083',bedrag:430,status:'betaald'},
+    {id:'f29',type:'verkoop',relatieId:'k25',nr:'VF2024-086',bedrag:1650,status:'open'},
+    {id:'f30',type:'verkoop',relatieId:'k26',nr:'VF2024-089',bedrag:280,status:'betaald'},
+    {id:'f31',type:'verkoop',relatieId:'k36',nr:'VF2024-101',bedrag:1920,status:'vervallen'},
+    {id:'f32',type:'verkoop',relatieId:'k36',nr:'VF2024-107',bedrag:840,status:'open'},
+    {id:'f33',type:'verkoop',relatieId:'k50',nr:'VF2024-112',bedrag:3100,status:'open'},
+    {id:'f34',type:'verkoop',relatieId:'k50',nr:'VF2024-118',bedrag:1340,status:'betaald'},
+    {id:'f35',type:'verkoop',relatieId:'k43',nr:'VF2024-122',bedrag:780,status:'open'},
+    {id:'f36',type:'aankoop',relatieId:'l01',nr:'AF2024-003',bedrag:5600,status:'open'},
+    {id:'f37',type:'aankoop',relatieId:'l01',nr:'AF2024-044',bedrag:3200,status:'betaald'},
+    {id:'f38',type:'aankoop',relatieId:'l01',nr:'AF2024-078',bedrag:4100,status:'vervallen'},
+    {id:'f39',type:'aankoop',relatieId:'l02',nr:'AF2024-011',bedrag:2100,status:'vervallen'},
+    {id:'f40',type:'aankoop',relatieId:'l02',nr:'AF2024-019',bedrag:880,status:'open'},
+    {id:'f41',type:'aankoop',relatieId:'l03',nr:'AF2024-027',bedrag:340,status:'betaald'},
+    {id:'f42',type:'aankoop',relatieId:'l04',nr:'AF2024-033',bedrag:1250,status:'open'},
+    {id:'f43',type:'aankoop',relatieId:'l05',nr:'AF2024-041',bedrag:6800,status:'betaald'},
+    {id:'f44',type:'aankoop',relatieId:'l05',nr:'AF2024-055',bedrag:4500,status:'open'},
+    {id:'f45',type:'aankoop',relatieId:'l06',nr:'AF2024-062',bedrag:2300,status:'betaald'},
+    {id:'f46',type:'aankoop',relatieId:'l07',nr:'AF2024-068',bedrag:1800,status:'open'},
+    {id:'f47',type:'aankoop',relatieId:'l08',nr:'AF2024-073',bedrag:560,status:'betaald'},
+    {id:'f48',type:'aankoop',relatieId:'l09',nr:'AF2024-079',bedrag:920,status:'open'},
+    {id:'f49',type:'aankoop',relatieId:'l10',nr:'AF2024-084',bedrag:7200,status:'betaald'},
+    {id:'f50',type:'aankoop',relatieId:'l11',nr:'AF2024-088',bedrag:3400,status:'open'},
+    {id:'f51',type:'aankoop',relatieId:'l12',nr:'AF2024-092',bedrag:1600,status:'betaald'},
+    {id:'f52',type:'aankoop',relatieId:'l13',nr:'AF2024-096',bedrag:5100,status:'vervallen'},
+    {id:'f53',type:'aankoop',relatieId:'l13',nr:'AF2024-101',bedrag:2800,status:'open'},
+    {id:'f54',type:'aankoop',relatieId:'l14',nr:'AF2024-105',bedrag:480,status:'betaald'},
+    {id:'f55',type:'aankoop',relatieId:'l15',nr:'AF2024-109',bedrag:1350,status:'open'},
+    {id:'f56',type:'aankoop',relatieId:'l16',nr:'AF2024-113',bedrag:740,status:'betaald'},
+    {id:'f57',type:'aankoop',relatieId:'l49',nr:'AF2024-117',bedrag:390,status:'open'},
+    {id:'f58',type:'aankoop',relatieId:'l50',nr:'AF2024-121',bedrag:2600,status:'vervallen'},
+    {id:'f59',type:'aankoop',relatieId:'l50',nr:'AF2024-128',bedrag:1900,status:'open'},
+    {id:'f60',type:'aankoop',relatieId:'l37',nr:'AF2024-133',bedrag:680,status:'open'},
+  ]
+};
+
+const STORAGE_KEY='metwear_data';
+
+function loadData(){
+  try{
+    const saved=localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const d=JSON.parse(saved);
+      if(d.klanten&&d.leveranciers&&d.facturen) return d;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(STARTDATA));
+}
+
+function saveData(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({klanten,leveranciers,facturen}));}catch(e){}
+}
+
+let {klanten,leveranciers,facturen}=loadData();
 let currentType='klant', editId=null, prevPage='klanten';
 
-const klanten=[
-  {id:'k01',naam:'ModeMagazijn De Smet',btw:'BE 0412.345.678',straat:'Kalverstraat 4',postcode:'2000',gemeente:'Antwerpen',contacten:['Lien De Smet','lien@desmet.be']},
-  {id:'k02',naam:'Groene Garderobe BVBA',btw:'BE 0523.987.654',straat:'Groenplaats 7',postcode:'9000',gemeente:'Gent',contacten:['Pieter Janssen']},
-  {id:'k03',naam:'FashionFirst NV',btw:'BE 0634.111.222',straat:'Meir 22',postcode:'2000',gemeente:'Antwerpen',contacten:['Sara Peeters','Jonas Claes']},
-  {id:'k04',naam:'EcoWear Brugge',btw:'BE 0745.333.444',straat:'Breidelstraat 18',postcode:'8000',gemeente:'Brugge',contacten:['Thomas Verhaeghe']},
-  {id:'k05',naam:'Stadswinkel Leuven',btw:'BE 0856.555.666',straat:'Bondgenotenlaan 3',postcode:'3000',gemeente:'Leuven',contacten:['Nathalie Wouters']},
-  {id:'k06',naam:'KledingKorner BVBA',btw:'BE 0967.777.888',straat:'Kerkstraat 14',postcode:'3500',gemeente:'Hasselt',contacten:['Wouter Declercq']},
-  {id:'k07',naam:'Sustainable Style Gent',btw:'BE 0178.999.000',straat:'Vrijdagmarkt 9',postcode:'9000',gemeente:'Gent',contacten:['An Vermeersch','an@ssg.be']},
-  {id:'k08',naam:'Trendy Threads NV',btw:'BE 0289.123.456',straat:'Steenweg 55',postcode:'1000',gemeente:'Brussel',contacten:['Kevin Bogaert']},
-  {id:'k09',naam:'Puur & Duurzaam',btw:'BE 0390.234.567',straat:'Donderbergweg 3',postcode:'2300',gemeente:'Turnhout',contacten:['Elise Mertens']},
-  {id:'k10',naam:'GreenThread Mechelen',btw:'BE 0401.345.678',straat:'Befferstraat 11',postcode:'2800',gemeente:'Mechelen',contacten:['Bart Nijs']},
-  {id:'k11',naam:'De Bewuste Kast',btw:'BE 0512.456.789',straat:'Grote Markt 2',postcode:'8500',gemeente:'Kortrijk',contacten:['Sofie Dewulf','sofie@dbk.be']},
-  {id:'k12',naam:'WearGreen VZW',btw:'BE 0623.567.890',straat:'Vismarkt 6',postcode:'9000',gemeente:'Gent',contacten:['Raf Goossens']},
-  {id:'k13',naam:'Urbana Fashion',btw:'BE 0734.678.901',straat:'Anspachlaan 44',postcode:'1000',gemeente:'Brussel',contacten:['Céline Dupont']},
-  {id:'k14',naam:'Conscious Closet',btw:'BE 0845.789.012',straat:'Leopoldlaan 7',postcode:'8400',gemeente:'Oostende',contacten:['Dieter Vanhoorne']},
-  {id:'k15',naam:'Stof & Stijl',btw:'BE 0956.890.123',straat:'Zavelstraat 3',postcode:'3000',gemeente:'Leuven',contacten:['Lore Adriaens']},
-  {id:'k16',naam:'NaturalWear Aalst',btw:'BE 0167.901.234',straat:'Kattestraat 19',postcode:'9300',gemeente:'Aalst',contacten:['Jeroen Willems']},
-  {id:'k17',naam:'EcoChic NV',btw:'BE 0278.012.345',straat:'Koningsstraat 88',postcode:'1000',gemeente:'Brussel',contacten:['Hanne Claeys','hanne@ecochic.be']},
-  {id:'k18',naam:'Biomode Roeselare',btw:'BE 0389.123.456',straat:'Beversesteenweg 4',postcode:'8800',gemeente:'Roeselare',contacten:['Mathias Declerck']},
-  {id:'k19',naam:'Veldgroen Retail',btw:'BE 0490.234.567',straat:'Dorpsstraat 30',postcode:'9620',gemeente:'Zottegem',contacten:['Griet Catteeuw']},
-  {id:'k20',naam:'ModernNature Gent',btw:'BE 0501.345.678',straat:'Coupure Links 24',postcode:'9000',gemeente:'Gent',contacten:['Tijs Van Hecke']},
-  {id:'k21',naam:'Circulaire Kledij',btw:'BE 0612.456.789',straat:'Lange Nieuwstraat 8',postcode:'2000',gemeente:'Antwerpen',contacten:['Els Bogaerts']},
-  {id:'k22',naam:'DuurzaamDragen BVBA',btw:'BE 0723.567.890',straat:'Stationsplein 1',postcode:'3800',gemeente:'Sint-Truiden',contacten:['Niels Vandenberghe']},
-  {id:'k23',naam:'FairFashion Kortrijk',btw:'BE 0834.678.901',straat:'Doorniksestraat 12',postcode:'8500',gemeente:'Kortrijk',contacten:['Amelie Desmet']},
-  {id:'k24',naam:'Katoenen Kast',btw:'BE 0945.789.012',straat:'Guido Gezellestraat 5',postcode:'8200',gemeente:'Brugge',contacten:['Frank Verstraete']},
-  {id:'k25',naam:'Herbruikbaar & Hip',btw:'BE 0156.890.123',straat:'Nieuwstraat 77',postcode:'1000',gemeente:'Brussel',contacten:['Laura Smeets']},
-  {id:'k26',naam:'Groene Winkel Geel',btw:'BE 0267.901.234',straat:'Markt 5',postcode:'2440',gemeente:'Geel',contacten:['Pieter-Jan Leys']},
-  {id:'k27',naam:'Texturas Belgium',btw:'BE 0378.012.345',straat:'Industrielaan 9',postcode:'1070',gemeente:'Brussel',contacten:['Marie Lecomte']},
-  {id:'k28',naam:'WovenWorld BVBA',btw:'BE 0489.123.456',straat:'Handelskaai 3',postcode:'1000',gemeente:'Brussel',contacten:['Sven Hermans']},
-  {id:'k29',naam:'KledingDepot Genk',btw:'BE 0590.234.567',straat:'Europalaan 12',postcode:'3600',gemeente:'Genk',contacten:['Yannick Puts']},
-  {id:'k30',naam:'Slow Fashion Store',btw:'BE 0601.345.678',straat:'Vrijheidslaan 18',postcode:'9200',gemeente:'Dendermonde',contacten:['Annelies Michiels']},
-  {id:'k31',naam:'Vezel & Vorm',btw:'BE 0712.456.789',straat:'Kloosterstraat 6',postcode:'2000',gemeente:'Antwerpen',contacten:['Bram Leclercq']},
-  {id:'k32',naam:'Echt & Eerlijk NV',btw:'BE 0823.567.890',straat:'Rekollettenstraat 10',postcode:'9000',gemeente:'Gent',contacten:['Liesbeth Nijs']},
-  {id:'k33',naam:'Kabas Concept Store',btw:'BE 0934.678.901',straat:'Paleizenstraat 32',postcode:'1030',gemeente:'Schaarbeek',contacten:['Julie Dumont']},
-  {id:'k34',naam:'Kledingcollectief VZW',btw:'BE 0145.789.012',straat:'Tivolitstraat 7',postcode:'2018',gemeente:'Antwerpen',contacten:['Robin De Backer']},
-  {id:'k35',naam:'FiberFair Hasselt',btw:'BE 0256.890.123',straat:'Grote Markt 14',postcode:'3500',gemeente:'Hasselt',contacten:['Noor Peeters']},
-  {id:'k36',naam:'Duurzame Mode Gent',btw:'BE 0367.901.234',straat:'Vlasmarkt 2',postcode:'9000',gemeente:'Gent',contacten:['Stef Baert','stef@dmg.be']},
-  {id:'k37',naam:'CleanCut Fashion',btw:'BE 0478.012.345',straat:'Mechelsesteenweg 4',postcode:'2018',gemeente:'Antwerpen',contacten:['Eva Nijs']},
-  {id:'k38',naam:'Bio Boutique Brugge',btw:'BE 0589.123.456',straat:'Wollestraat 9',postcode:'8000',gemeente:'Brugge',contacten:['Hendrik Deschamps']},
-  {id:'k39',naam:'Minimaliste BVBA',btw:'BE 0690.234.567',straat:'Kouter 1',postcode:'9000',gemeente:'Gent',contacten:['Fien Claessens']},
-  {id:'k40',naam:'Goed Gekleed VZW',btw:'BE 0701.345.678',straat:'Vogelmarkt 3',postcode:'2000',gemeente:'Antwerpen',contacten:['Mathieu Dubois']},
-  {id:'k41',naam:'TerraNova Wear',btw:'BE 0812.456.789',straat:'Nijverheidslaan 8',postcode:'8500',gemeente:'Kortrijk',contacten:['Hannelore Vermeersch']},
-  {id:'k42',naam:'Ethische Threads',btw:'BE 0923.567.890',straat:'Burgemeesterstraat 22',postcode:'1000',gemeente:'Brussel',contacten:['Sebastiaan Maes']},
-  {id:'k43',naam:'GreenLabel Shops NV',btw:'BE 0134.678.901',straat:'Brusselsesteenweg 45',postcode:'3000',gemeente:'Leuven',contacten:['Karlien Adams']},
-  {id:'k44',naam:'Warme Draden',btw:'BE 0245.789.012',straat:'Kapittelstraat 5',postcode:'2000',gemeente:'Antwerpen',contacten:['Lien Vanderhaegen']},
-  {id:'k45',naam:'PureWear Vilvoorde',btw:'BE 0356.890.123',straat:'Parkstraat 7',postcode:'1800',gemeente:'Vilvoorde',contacten:['Tim Verschueren']},
-  {id:'k46',naam:'Natumode Liège',btw:'BE 0467.901.234',straat:'Rue Saint-Gilles 3',postcode:'4000',gemeente:'Luik',contacten:['Sophie Renard']},
-  {id:'k47',naam:'Eco Ensemble',btw:'BE 0578.012.345',straat:'Abdijstraat 11',postcode:'9000',gemeente:'Gent',contacten:['Wout Vercruysse']},
-  {id:'k48',naam:'GreenGarment Aalst',btw:'BE 0689.123.456',straat:'Molenstraat 6',postcode:'9300',gemeente:'Aalst',contacten:['Nathalie De Wolf']},
-  {id:'k49',naam:'Bewust Gekleed',btw:'BE 0790.234.567',straat:'Oud-Strijdersplein 4',postcode:'2200',gemeente:'Herentals',contacten:['Jonas Beys']},
-  {id:'k50',naam:'Kleur & Katoen BVBA',btw:'BE 0801.345.678',straat:'Kattestraat 2',postcode:'8000',gemeente:'Brugge',contacten:['An-Sofie Declercq','ansofie@kleurkatoen.be']},
-];
-
-const leveranciers=[
-  {id:'l01',naam:'BioTextiel Portugal',btw:'PT 501234567',straat:'Rua das Fábricas 88',postcode:'4000',gemeente:'Porto',contacten:['Carlos Ferreira','carlos@biotextiel.pt']},
-  {id:'l02',naam:'GreenFiber Netherlands BV',btw:'NL 123456789B01',straat:'Industrieweg 45',postcode:'5600',gemeente:'Eindhoven',contacten:['Anke van Dijk']},
-  {id:'l03',naam:'EcoLabel Printing',btw:'BE 0345.678.901',straat:'Drukkerijstraat 6',postcode:'1070',gemeente:'Brussel',contacten:['Marc Dubois']},
-  {id:'l04',naam:'ZipFast Accessories',btw:'DE 123456789',straat:'Fabrikstraße 12',postcode:'40210',gemeente:'Düsseldorf',contacten:['Klaus Müller']},
-  {id:'l05',naam:'OrganicCotton Spain SL',btw:'ES B12345678',straat:'Calle Industria 4',postcode:'08025',gemeente:'Barcelona',contacten:['Marta López']},
-  {id:'l06',naam:'NatureDye Italia SRL',btw:'IT 12345678901',straat:'Via della Tessitura 7',postcode:'50123',gemeente:'Florence',contacten:['Giulia Rossi','g.rossi@naturedye.it']},
-  {id:'l07',naam:'Recycled Yarns UK Ltd',btw:'GB 123456789',straat:'Mill Road 33',postcode:'LS1 4AP',gemeente:'Leeds',contacten:['James Thornton']},
-  {id:'l08',naam:'Hangtag Solutions BVBA',btw:'BE 0456.789.012',straat:'Industriepark 3',postcode:'2200',gemeente:'Herentals',contacten:['Petra Claes']},
-  {id:'l09',naam:'PackGreen NV',btw:'BE 0567.890.123',straat:'Verpakkingsweg 9',postcode:'9320',gemeente:'Erembodegem',contacten:['Dirk Smet']},
-  {id:'l10',naam:'Fairtex India Pvt Ltd',btw:'IN 07AABCF1234A1Z5',straat:'Gandhi Nagar 14',postcode:'380001',gemeente:'Ahmedabad',contacten:['Priya Sharma']},
-  {id:'l11',naam:'BambooBunch Thailand',btw:'TH 0105556789',straat:'Sukhumvit 22',postcode:'10110',gemeente:'Bangkok',contacten:['Somchai Pradit']},
-  {id:'l12',naam:'LinenLux France SARL',btw:'FR 12345678901',straat:'Rue du Lin 8',postcode:'59000',gemeente:'Lille',contacten:['Émile Durand']},
-  {id:'l13',naam:'WovenWonders Turkey',btw:'TR 1234567890',straat:'Organize Sanayi 5',postcode:'16140',gemeente:'Bursa',contacten:['Mehmet Yilmaz','m.yilmaz@wovenwonders.tr']},
-  {id:'l14',naam:'Sustainable Buttons GmbH',btw:'DE 987654321',straat:'Knopfgasse 3',postcode:'70173',gemeente:'Stuttgart',contacten:['Anna Weber']},
-  {id:'l15',naam:'ThreadPool Denmark ApS',btw:'DK 12345678',straat:'Tekstilvej 12',postcode:'8000',gemeente:'Aarhus',contacten:['Lars Nielsen']},
-  {id:'l16',naam:'EcoBox Belgium BVBA',btw:'BE 0678.901.234',straat:'Kartonstraat 4',postcode:'9000',gemeente:'Gent',contacten:['Lore Baert']},
-  {id:'l17',naam:'CoolCarton NV',btw:'BE 0789.012.345',straat:'Verpakkingspark 7',postcode:'2800',gemeente:'Mechelen',contacten:['Ruben Adams']},
-  {id:'l18',naam:'NaturalWash Solutions',btw:'BE 0890.123.456',straat:'Wasmiddelenweg 2',postcode:'3600',gemeente:'Genk',contacten:['Hilde Wouters']},
-  {id:'l19',naam:'FairSeam Portugal Lda',btw:'PT 509876543',straat:'Avenida Têxtil 22',postcode:'4715',gemeente:'Braga',contacten:['Ana Oliveira']},
-  {id:'l20',naam:'BioPack Innovations',btw:'NL 987654321B02',straat:'Groenweg 8',postcode:'3542',gemeente:'Utrecht',contacten:['Femke Jansen']},
-  {id:'l21',naam:'RawMaterial Morocco',btw:'MA 123456',straat:'Zone Industrielle 3',postcode:'20000',gemeente:'Casablanca',contacten:['Hassan Benali']},
-  {id:'l22',naam:'Texturas Iberia SA',btw:'ES A87654321',straat:'Polígono Industrial 12',postcode:'46014',gemeente:'Valencia',contacten:['Pedro García']},
-  {id:'l23',naam:'EcoStitch Sweden AB',btw:'SE 556677889901',straat:'Fabriksvägen 5',postcode:'41263',gemeente:'Göteborg',contacten:['Ingrid Lindqvist','i.lindqvist@ecostitch.se']},
-  {id:'l24',naam:'FiberArt Poland Sp zoo',btw:'PL 1234567890',straat:'ul Przemysłowa 8',postcode:'60-101',gemeente:'Poznań',contacten:['Marek Kowalski']},
-  {id:'l25',naam:'GreenTag Solutions',btw:'BE 0901.234.567',straat:'Labelstraat 11',postcode:'1000',gemeente:'Brussel',contacten:['Claire Fontaine']},
-  {id:'l26',naam:'NaturLoop Recycling',btw:'BE 0112.345.678',straat:'Recyclageplein 3',postcode:'2050',gemeente:'Antwerpen',contacten:['Bert Cools']},
-  {id:'l27',naam:'Linnen & Leven BVBA',btw:'BE 0223.456.789',straat:'Vlasrotersdreef 6',postcode:'8800',gemeente:'Roeselare',contacten:['Trees Vandamme']},
-  {id:'l28',naam:'KatoenKweek NV',btw:'BE 0334.567.890',straat:'Katoenweg 9',postcode:'9300',gemeente:'Aalst',contacten:['Hugo Lemmens']},
-  {id:'l29',naam:'PrintClean Belgium',btw:'BE 0445.678.901',straat:'Inktvlekkenstraat 2',postcode:'1070',gemeente:'Brussel',contacten:['Aline Dupuis']},
-  {id:'l30',naam:'EcoThread Romania SRL',btw:'RO 12345678',straat:'Strada Fabricii 4',postcode:'400000',gemeente:'Cluj-Napoca',contacten:['Ioana Popescu']},
-  {id:'l31',naam:'BioStof Gent BVBA',btw:'BE 0556.789.012',straat:'Stoflaan 14',postcode:'9000',gemeente:'Gent',contacten:['Geert Michiels']},
-  {id:'l32',naam:'ColorNature Dyes',btw:'BE 0667.890.123',straat:'Verfstraat 3',postcode:'2000',gemeente:'Antwerpen',contacten:['Ingrid Pieters']},
-  {id:'l33',naam:'FairKnit Latvia SIA',btw:'LV 12345678901',straat:'Rūpniecības iela 5',postcode:'LV-1045',gemeente:'Riga',contacten:['Jānis Bērziņš']},
-  {id:'l34',naam:'SilkRoad Belgium NV',btw:'BE 0778.901.234',straat:'Handelsstraat 21',postcode:'1000',gemeente:'Brussel',contacten:['Nadia El Amin']},
-  {id:'l35',naam:'WearWell Estonia OÜ',btw:'EE 123456789',straat:'Tootmise tee 7',postcode:'10111',gemeente:'Tallinn',contacten:['Tiiu Kask']},
-  {id:'l36',naam:'GreenSeam Tunisia',btw:'TN 123456789',straat:'Zone Franche 8',postcode:'2073',gemeente:'Bizerte',contacten:['Khaled Trabelsi']},
-  {id:'l37',naam:'BioBand Accessories',btw:'BE 0889.012.345',straat:'Accessoirepark 4',postcode:'3500',gemeente:'Hasselt',contacten:['Kristien Claes','k.claes@bioband.be']},
-  {id:'l38',naam:'NaturHout Packaging',btw:'BE 0990.123.456',straat:'Houtstraat 6',postcode:'9200',gemeente:'Dendermonde',contacten:['Karel De Cock']},
-  {id:'l39',naam:'EcoZipper Solutions',btw:'DE 456789123',straat:'Reißverschlussweg 3',postcode:'73430',gemeente:'Aalen',contacten:['Peter Schmidt']},
-  {id:'l40',naam:'BreathableFabrics NV',btw:'BE 0101.234.567',straat:'Fabrieksweg 15',postcode:'8500',gemeente:'Kortrijk',contacten:['Veerle Vansteenkiste']},
-  {id:'l41',naam:'WoolWorks Australia',btw:'AU 51824753556',straat:'Merino Drive 4',postcode:'3000',gemeente:'Melbourne',contacten:['Jack Williams']},
-  {id:'l42',naam:'HempHero Czech sro',btw:'CZ 12345678',straat:'Průmyslová 9',postcode:'602 00',gemeente:'Brno',contacten:['Pavel Novák']},
-  {id:'l43',naam:'GreenLabel Ink NV',btw:'BE 0212.345.678',straat:'Zeefdrukstraat 2',postcode:'2300',gemeente:'Turnhout',contacten:['Wim Bogaert']},
-  {id:'l44',naam:'TerraCycle Textiles',btw:'BE 0323.456.789',straat:'Recyclageweg 7',postcode:'1800',gemeente:'Vilvoorde',contacten:['Sigrid Leclercq']},
-  {id:'l45',naam:'FabricFirst Kenya Ltd',btw:'KE A123456789B',straat:'Industrial Area 3',postcode:'00200',gemeente:'Nairobi',contacten:['James Ochieng']},
-  {id:'l46',naam:'EcoWeave Greece EPE',btw:'GR 123456789',straat:'Viomichaniki Odos 6',postcode:'141 23',gemeente:'Athene',contacten:['Nikos Papadopoulos']},
-  {id:'l47',naam:'FairThread Vietnam Co',btw:'VN 0123456789',straat:'Khu Cong Nghiep 12',postcode:'700000',gemeente:'Ho Chi Minh Stad',contacten:['Nguyen Thi Lan']},
-  {id:'l48',naam:'Linnenland België BVBA',btw:'BE 0434.567.890',straat:'Linnenweg 3',postcode:'8800',gemeente:'Roeselare',contacten:['Isabelle Vandenberghe']},
-  {id:'l49',naam:'BioButton Factory',btw:'BE 0545.678.901',straat:'Knopenstraat 8',postcode:'3000',gemeente:'Leuven',contacten:['Stijn Janssen','stijn@biobutton.be']},
-  {id:'l50',naam:'CleanCarrier Logistics',btw:'BE 0656.789.012',straat:'Transportweg 22',postcode:'2600',gemeente:'Berchem',contacten:['David Michiels']},
-];
-
-const facturen=[
-  {id:'f01',type:'verkoop',relatieId:'k01',nr:'VF2024-001',bedrag:1840,status:'open'},
-  {id:'f02',type:'verkoop',relatieId:'k01',nr:'VF2024-008',bedrag:620,status:'vervallen'},
-  {id:'f03',type:'verkoop',relatieId:'k01',nr:'VF2024-045',bedrag:980,status:'betaald'},
-  {id:'f04',type:'verkoop',relatieId:'k02',nr:'VF2024-012',bedrag:410,status:'betaald'},
-  {id:'f05',type:'verkoop',relatieId:'k03',nr:'VF2024-015',bedrag:3200,status:'open'},
-  {id:'f06',type:'verkoop',relatieId:'k03',nr:'VF2024-041',bedrag:1560,status:'betaald'},
-  {id:'f07',type:'verkoop',relatieId:'k04',nr:'VF2024-019',bedrag:740,status:'open'},
-  {id:'f08',type:'verkoop',relatieId:'k05',nr:'VF2024-022',bedrag:950,status:'vervallen'},
-  {id:'f09',type:'verkoop',relatieId:'k05',nr:'VF2024-052',bedrag:1200,status:'open'},
-  {id:'f10',type:'verkoop',relatieId:'k06',nr:'VF2024-028',bedrag:2100,status:'betaald'},
-  {id:'f11',type:'verkoop',relatieId:'k07',nr:'VF2024-031',bedrag:880,status:'open'},
-  {id:'f12',type:'verkoop',relatieId:'k08',nr:'VF2024-033',bedrag:660,status:'betaald'},
-  {id:'f13',type:'verkoop',relatieId:'k09',nr:'VF2024-037',bedrag:310,status:'open'},
-  {id:'f14',type:'verkoop',relatieId:'k10',nr:'VF2024-039',bedrag:1450,status:'betaald'},
-  {id:'f15',type:'verkoop',relatieId:'k11',nr:'VF2024-044',bedrag:570,status:'vervallen'},
-  {id:'f16',type:'verkoop',relatieId:'k12',nr:'VF2024-048',bedrag:290,status:'open'},
-  {id:'f17',type:'verkoop',relatieId:'k13',nr:'VF2024-051',bedrag:2400,status:'betaald'},
-  {id:'f18',type:'verkoop',relatieId:'k14',nr:'VF2024-055',bedrag:830,status:'open'},
-  {id:'f19',type:'verkoop',relatieId:'k15',nr:'VF2024-058',bedrag:1100,status:'betaald'},
-  {id:'f20',type:'verkoop',relatieId:'k16',nr:'VF2024-061',bedrag:490,status:'open'},
-  {id:'f21',type:'verkoop',relatieId:'k17',nr:'VF2024-063',bedrag:3600,status:'vervallen'},
-  {id:'f22',type:'verkoop',relatieId:'k18',nr:'VF2024-066',bedrag:720,status:'betaald'},
-  {id:'f23',type:'verkoop',relatieId:'k19',nr:'VF2024-069',bedrag:350,status:'open'},
-  {id:'f24',type:'verkoop',relatieId:'k20',nr:'VF2024-072',bedrag:1800,status:'betaald'},
-  {id:'f25',type:'verkoop',relatieId:'k21',nr:'VF2024-075',bedrag:540,status:'open'},
-  {id:'f26',type:'verkoop',relatieId:'k22',nr:'VF2024-078',bedrag:960,status:'betaald'},
-  {id:'f27',type:'verkoop',relatieId:'k23',nr:'VF2024-080',bedrag:2200,status:'open'},
-  {id:'f28',type:'verkoop',relatieId:'k24',nr:'VF2024-083',bedrag:430,status:'betaald'},
-  {id:'f29',type:'verkoop',relatieId:'k25',nr:'VF2024-086',bedrag:1650,status:'open'},
-  {id:'f30',type:'verkoop',relatieId:'k26',nr:'VF2024-089',bedrag:280,status:'betaald'},
-  {id:'f31',type:'verkoop',relatieId:'k36',nr:'VF2024-101',bedrag:1920,status:'vervallen'},
-  {id:'f32',type:'verkoop',relatieId:'k36',nr:'VF2024-107',bedrag:840,status:'open'},
-  {id:'f33',type:'verkoop',relatieId:'k50',nr:'VF2024-112',bedrag:3100,status:'open'},
-  {id:'f34',type:'verkoop',relatieId:'k50',nr:'VF2024-118',bedrag:1340,status:'betaald'},
-  {id:'f35',type:'verkoop',relatieId:'k43',nr:'VF2024-122',bedrag:780,status:'open'},
-  {id:'f36',type:'aankoop',relatieId:'l01',nr:'AF2024-003',bedrag:5600,status:'open'},
-  {id:'f37',type:'aankoop',relatieId:'l01',nr:'AF2024-044',bedrag:3200,status:'betaald'},
-  {id:'f38',type:'aankoop',relatieId:'l01',nr:'AF2024-078',bedrag:4100,status:'vervallen'},
-  {id:'f39',type:'aankoop',relatieId:'l02',nr:'AF2024-011',bedrag:2100,status:'vervallen'},
-  {id:'f40',type:'aankoop',relatieId:'l02',nr:'AF2024-019',bedrag:880,status:'open'},
-  {id:'f41',type:'aankoop',relatieId:'l03',nr:'AF2024-027',bedrag:340,status:'betaald'},
-  {id:'f42',type:'aankoop',relatieId:'l04',nr:'AF2024-033',bedrag:1250,status:'open'},
-  {id:'f43',type:'aankoop',relatieId:'l05',nr:'AF2024-041',bedrag:6800,status:'betaald'},
-  {id:'f44',type:'aankoop',relatieId:'l05',nr:'AF2024-055',bedrag:4500,status:'open'},
-  {id:'f45',type:'aankoop',relatieId:'l06',nr:'AF2024-062',bedrag:2300,status:'betaald'},
-  {id:'f46',type:'aankoop',relatieId:'l07',nr:'AF2024-068',bedrag:1800,status:'open'},
-  {id:'f47',type:'aankoop',relatieId:'l08',nr:'AF2024-073',bedrag:560,status:'betaald'},
-  {id:'f48',type:'aankoop',relatieId:'l09',nr:'AF2024-079',bedrag:920,status:'open'},
-  {id:'f49',type:'aankoop',relatieId:'l10',nr:'AF2024-084',bedrag:7200,status:'betaald'},
-  {id:'f50',type:'aankoop',relatieId:'l11',nr:'AF2024-088',bedrag:3400,status:'open'},
-  {id:'f51',type:'aankoop',relatieId:'l12',nr:'AF2024-092',bedrag:1600,status:'betaald'},
-  {id:'f52',type:'aankoop',relatieId:'l13',nr:'AF2024-096',bedrag:5100,status:'vervallen'},
-  {id:'f53',type:'aankoop',relatieId:'l13',nr:'AF2024-101',bedrag:2800,status:'open'},
-  {id:'f54',type:'aankoop',relatieId:'l14',nr:'AF2024-105',bedrag:480,status:'betaald'},
-  {id:'f55',type:'aankoop',relatieId:'l15',nr:'AF2024-109',bedrag:1350,status:'open'},
-  {id:'f56',type:'aankoop',relatieId:'l16',nr:'AF2024-113',bedrag:740,status:'betaald'},
-  {id:'f57',type:'aankoop',relatieId:'l49',nr:'AF2024-117',bedrag:390,status:'open'},
-  {id:'f58',type:'aankoop',relatieId:'l50',nr:'AF2024-121',bedrag:2600,status:'vervallen'},
-  {id:'f59',type:'aankoop',relatieId:'l50',nr:'AF2024-128',bedrag:1900,status:'open'},
-  {id:'f60',type:'aankoop',relatieId:'l37',nr:'AF2024-133',bedrag:680,status:'open'},
-];
-
-function fmt(n){return '€\u00a0'+n.toLocaleString('nl-BE')}
-
+function fmt(n){return '\u20ac\u00a0'+n.toLocaleString('nl-BE')}
 function openCount(id){return facturen.filter(f=>f.relatieId===id&&f.status!=='betaald').length}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({klanten,leveranciers,facturen},null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='metwear_data.json';
+  a.click();
+  toast('Data geëxporteerd');
+}
+
+function importData(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!d.klanten||!d.leveranciers||!d.facturen) throw new Error();
+      klanten.length=0; klanten.push(...d.klanten);
+      leveranciers.length=0; leveranciers.push(...d.leveranciers);
+      facturen.length=0; facturen.push(...d.facturen);
+      saveData();
+      showPage('dashboard');
+      toast('Data ingeladen');
+    }catch(err){alert('Ongeldig bestand. Gebruik een eerder geëxporteerd MetWear-bestand.');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function onSearch(type){
+  const id=type==='klant'?'search-klant':'search-lev';
+  const clearId=type==='klant'?'clear-klant':'clear-lev';
+  const val=document.getElementById(id).value;
+  document.getElementById(clearId).classList.toggle('visible',val.length>0);
+  type==='klant'?renderKlanten():renderLeveranciers();
+}
+
+function clearSearch(type){
+  const id=type==='klant'?'search-klant':'search-lev';
+  const clearId=type==='klant'?'clear-klant':'clear-lev';
+  document.getElementById(id).value='';
+  document.getElementById(clearId).classList.remove('visible');
+  type==='klant'?renderKlanten():renderLeveranciers();
+}
 
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const items=document.querySelectorAll('.nav-item');
   const map={dashboard:0,klanten:1,leveranciers:2,openstaand:3};
-  if(map[name]!==undefined) items[map[name]].classList.add('active');
+  if(map[name]!==undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if(name==='dashboard') renderDashboard();
   if(name==='klanten') renderKlanten();
   if(name==='leveranciers') renderLeveranciers();
@@ -461,21 +548,15 @@ function renderDashboard(){
   const kIds=[...new Set(openK.map(f=>f.relatieId))];
   document.getElementById('dash-klanten-open').innerHTML=kIds.map(id=>{
     const k=klanten.find(x=>x.id===id);
-    const fs=openK.filter(f=>f.relatieId===id);
-    const totaal=fs.reduce((s,f)=>s+f.bedrag,0);
-    return`<div class="dash-open-row" onclick="showDetail('klant','${id}')">
-      <span>${k?k.naam:'?'}</span>
-      <span class="badge badge-open">${fmt(totaal)}</span>
-    </div>`}).join('')||'<div class="empty" style="padding:16px">Geen openstaande facturen</div>';
+    const tot=openK.filter(f=>f.relatieId===id).reduce((s,f)=>s+f.bedrag,0);
+    return`<div class="dash-open-row" onclick="showDetail('klant','${id}')"><span>${k?k.naam:'?'}</span><span class="badge badge-open">${fmt(tot)}</span></div>`;
+  }).join('')||'<div class="empty" style="padding:16px">Geen openstaande facturen</div>';
   const lIds=[...new Set(openL.map(f=>f.relatieId))];
   document.getElementById('dash-lev-open').innerHTML=lIds.map(id=>{
     const l=leveranciers.find(x=>x.id===id);
-    const fs=openL.filter(f=>f.relatieId===id);
-    const totaal=fs.reduce((s,f)=>s+f.bedrag,0);
-    return`<div class="dash-open-row" onclick="showDetail('leverancier','${id}')">
-      <span>${l?l.naam:'?'}</span>
-      <span class="badge badge-open">${fmt(totaal)}</span>
-    </div>`}).join('')||'<div class="empty" style="padding:16px">Geen openstaande facturen</div>';
+    const tot=openL.filter(f=>f.relatieId===id).reduce((s,f)=>s+f.bedrag,0);
+    return`<div class="dash-open-row" onclick="showDetail('leverancier','${id}')"><span>${l?l.naam:'?'}</span><span class="badge badge-open">${fmt(tot)}</span></div>`;
+  }).join('')||'<div class="empty" style="padding:16px">Geen openstaande facturen</div>';
 }
 
 function showDetail(type,id){
@@ -488,11 +569,17 @@ function showDetail(type,id){
   const openBedrag=facturenRelatie.filter(f=>f.status!=='betaald').reduce((s,f)=>s+f.bedrag,0);
   document.getElementById('detail-content').innerHTML=`
     <div class="detail-card">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:46px;height:46px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:16px;color:var(--color-text-info);flex-shrink:0">${relatie.naam.charAt(0)}</div>
-        <div>
-          <div style="font-size:16px;font-weight:500">${relatie.naam}</div>
-          <div style="font-size:13px;color:var(--color-text-secondary)">${isKlant?'Klant':'Leverancier'}${openBedrag>0?' · <span style="color:var(--color-text-warning)">'+fmt(openBedrag)+' openstaand</span>':''}</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:46px;height:46px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:16px;color:var(--color-text-info);flex-shrink:0">${relatie.naam.charAt(0)}</div>
+          <div>
+            <div style="font-size:16px;font-weight:500">${relatie.naam}</div>
+            <div style="font-size:13px;color:var(--color-text-secondary)">${isKlant?'Klant':'Leverancier'}${openBedrag>0?' · <span style="color:var(--color-text-warning)">'+fmt(openBedrag)+' openstaand</span>':''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn" onclick="openModal('${type}','${id}')"><i class="ti ti-edit"></i> Bewerken</button>
+          <button class="btn btn-danger" onclick="deleteRelatie('${type}','${id}')"><i class="ti ti-trash"></i> Verwijderen</button>
         </div>
       </div>
       <div class="detail-grid" style="margin-top:16px;border-top:0.5px solid var(--color-border-tertiary);padding-top:14px">
@@ -513,6 +600,18 @@ function showDetail(type,id){
       </tr>`).join('')}</tbody>
     </table>`:'<div class="empty">Geen facturen geregistreerd</div>'}`;
   showPage('detail');
+}
+
+function deleteRelatie(type,id){
+  const lijst=type==='klant'?klanten:leveranciers;
+  const relatie=lijst.find(x=>x.id===id);
+  if(!relatie) return;
+  if(!confirm(`"${relatie.naam}" verwijderen? Dit kan niet ongedaan gemaakt worden.`)) return;
+  const idx=lijst.indexOf(relatie);
+  lijst.splice(idx,1);
+  saveData();
+  toast(relatie.naam+' verwijderd');
+  showPage(type==='klant'?'klanten':'leveranciers');
 }
 
 function goBack(){showPage(prevPage)}
@@ -561,13 +660,17 @@ function saveRelatie(){
   if(editId){
     const r=lijst.find(x=>x.id===editId);
     if(r) Object.assign(r,obj);
+    toast('Wijzigingen opgeslagen');
   } else {
     obj.id=(currentType==='klant'?'k':'l')+'_'+Date.now();
     lijst.push(obj);
+    toast(obj.naam+' toegevoegd');
   }
+  saveData();
   closeModal();
   currentType==='klant'?renderKlanten():renderLeveranciers();
   renderDashboard();
+  if(editId) showDetail(currentType, editId);
 }
 
 renderDashboard();
